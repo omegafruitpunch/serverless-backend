@@ -1,0 +1,45 @@
+service: notes-app-api
+
+# Create an optimized package for our functions
+package:
+  individually: true
+
+plugins:
+  - serverless-bundle # Package our functions with Webpack
+  - serverless-offline
+
+provider:
+  name: aws
+  runtime: nodejs8.10
+  stage: prod
+  region: us-east-1
+
+  # 'iamRolseStatements' defines the permission policy for the Lambda function.
+  # In this case Lambda functions are granted with permissions to access DynamoDb.
+  iamRolseStatements:
+      - Effect: Allow
+      Action:
+          - dyanmodb: DescribeTable
+          - dyanmodb: Query
+          - dyanmodb: Scan
+          - dyanmodb: GetItem
+          - dyanmodb: PutItem
+          - dyanmodb: UpdateItem
+          - dyanmodb: DeleteItem
+    Resource: "arn:aws:dynamodb:us-east-1:*:*"
+
+  functions:
+      # Defines an HTTP API endpoint that ca;;s the main function in create.js
+      # - path: url path is /notes
+      # - method: POST request
+      # - cors: enabaled CORS (Cross-Origin Resource Sharing) for browser cross
+      #     domain api call
+      # - authorizer: authenticate using the AWS IAM role
+      create:
+          handler: create.main
+          events:
+              - http:
+                  path: notes
+                  method: post
+                  cors: true
+                  authorizer: aws_iam 
